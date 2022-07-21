@@ -24,6 +24,7 @@
 
 typedef uint32_t word_t;
 typedef uint16_t hword_t;
+typedef uint64_t dword_t;
 
 /* WORD_BITS (resp. WORD_BYTES): number of bits (resp. bytes) in a word. */
 #define WORD_BITS (32)

@@ -1,3 +1,7 @@
+#ifdef WITH_CKB
+#define CKB_C_STDLIB_PRINTF
+#endif
+
 /*
  *  Copyright (C) 2017 - This file is part of libecc project
  *
@@ -153,8 +157,13 @@ int main(int argc, char *argv[])
 	int sign_filters_num = 0, hash_filters_num = 0, curve_filters_num = 0;
 	int i, j, k;
 
+#if defined(WITH_CKB)
+	/* PERFORMANCE tests are too slow to run on ckb */
+	tests_to_do = KNOWN_TEST_VECTORS | RANDOM_SIG_VERIF;
+#else
 	/* By default, perform all tests */
 	tests_to_do = KNOWN_TEST_VECTORS | RANDOM_SIG_VERIF | PERFORMANCE;
+#endif
 
 	/* Sanity check */
 	if(MAX_FILTERS < 1){

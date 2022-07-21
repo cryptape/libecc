@@ -24,12 +24,20 @@
 
 typedef uint64_t word_t;
 typedef uint32_t hword_t;
+#ifdef __GNUC__
+__extension__ typedef unsigned __int128 dword_t;
+#endif
+
 
 /* WORD_BITS (resp. WORD_BYTES): number of bits (resp. bytes) in a word. */
 #define WORD_BITS (64)
 #define WORD_BYTES (WORD_BITS / 8)
 #define HWORD_BITS (32)
 #define HWORD_BYTES (HWORD_BITS / 8)
+
+#if defined(WITH_CKB) && ! defined(UINT64_C)
+#define UINT64_C(c) (c ## ULL)
+#endif
 
 /* WORD: constant of word-size. */
 #define WORD(A) (UINT64_C(A))

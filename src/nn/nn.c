@@ -49,8 +49,9 @@ static int ATTRIBUTE_UNUSED __nn_is_wlen_consistent(nn_src_t A)
  * should be used as a safety net in all function before using a nn
  * received as parameter.
  */
-void nn_check_initialized(nn_src_t A)
+__attribute__((always_inline)) inline void nn_check_initialized(nn_src_t A)
 {
+  return;
 	MUST_HAVE((A != NULL) && (A->magic == NN_MAGIC) &&
 		  (A->wlen <= NN_MAX_WORD_LEN));
 	SHOULD_HAVE(__nn_is_wlen_consistent(A));
@@ -74,11 +75,12 @@ void nn_init(nn_t A, u16 len)
 {
 	u8 i;
 
-	MUST_HAVE((A != NULL) && (len <= NN_MAX_BYTE_LEN));
+	// MUST_HAVE((A != NULL) && (len <= NN_MAX_BYTE_LEN));
 
 	A->wlen = (u8)BYTE_LEN_WORDS(len);
 	A->magic = NN_MAGIC;
 
+  // memset(A->val, 0, NN_MAX_BYTE_LEN);
 	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
 		A->val[i] = WORD(0);
 	}
@@ -107,12 +109,10 @@ void nn_one(nn_t A)
 
 /*
  * Uninitialize pointed nn to prevent further use (magic field in
- * the structure is zeroized) and zeroize associated storage space.
+ * the structure is zeroized).
  */
 void nn_uninit(nn_t A)
 {
-	nn_zero(A);
-	A->wlen = 0;
 	A->magic = 0;
 }
 
@@ -122,6 +122,9 @@ void nn_uninit(nn_t A)
  */
 void nn_cnd_swap(int cnd, nn_t in1, nn_t in2)
 {
+  if (!cnd) {
+    return;
+  }
 	word_t mask = WORD_MASK_IFNOTZERO(cnd);
 	u8 len, i;
 	word_t t;
@@ -155,16 +158,14 @@ void nn_cnd_swap(int cnd, nn_t in1, nn_t in2)
 void nn_set_wlen(nn_t A, u8 new_wlen)
 {
 	u8 i;
-
-	nn_check_initialized(A);
-	MUST_HAVE(new_wlen <= NN_MAX_WORD_LEN);
-	MUST_HAVE(A->wlen <= NN_MAX_WORD_LEN);
-
-        /* Trimming performed in constant time */
-        for (i = 0; i < NN_MAX_WORD_LEN; i++) {
-                A->val[i] &= WORD_MASK_IFZERO((i >= new_wlen));
-        }
-
+	if (A->wlen == new_wlen) {
+		return;
+	}
+	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
+		if (i >= new_wlen) {
+			A->val[i] = 0;
+		}
+	}
 	A->wlen = new_wlen;
 }
 
@@ -174,18 +175,15 @@ void nn_set_wlen(nn_t A, u8 new_wlen)
  */
 int nn_iszero(nn_src_t A)
 {
-	int ret = 0;
 	u8 i;
 
 	nn_check_initialized(A);
-	MUST_HAVE(A->wlen <= NN_MAX_WORD_LEN);
 
-	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
-		int mask = ((i < A->wlen) ? 1 : 0);
-		ret |= ((A->val[i] != 0) & mask);
+	for (i = 0; i < A->wlen; i++) {
+		if (A->val[i] != 0) return 0;
 	}
 
-	return !ret;
+	return 1;
 }
 
 /* 
@@ -243,7 +241,7 @@ int nn_cmp_word(nn_src_t in, word_t w)
 	 * of those is non-zero.
 	 */
 	for (i = in->wlen - 1; i > 0; i--) {
-		ret |= (in->val[i] != 0);
+		if (in->val[i] != 0) return 1;
 	}
 
 	/*
@@ -277,11 +275,11 @@ int nn_cmp(nn_src_t A, nn_src_t B)
 
 	ret = 0;
 	for (i = cmp_len - 1; i >= 0; i--) {	/* ok even if cmp_len is 0 */
-		mask = !(ret & 0x1);
-		ret += (A->val[i] > B->val[i]) & mask;
-		ret -= (A->val[i] < B->val[i]) & mask;
+		if (A->val[i] > B->val[i]) return 1;
+		if (A->val[i] < B->val[i]) return -1;
 	}
 
+  return 0;
 	return ret;
 }
 
@@ -296,9 +294,10 @@ void nn_copy(nn_t dst_nn, nn_src_t src_nn)
 {
 	u8 i;
 
-	MUST_HAVE((const void *)dst_nn != NULL);
+	// MUST_HAVE((const void *)dst_nn != NULL);
 	nn_check_initialized(src_nn);
 
+  // memcpy(dst_nn->val, src_nn->val, NN_MAX_BYTE_LEN);
 	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
 		dst_nn->val[i] = src_nn->val[i];
 	}

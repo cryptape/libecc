@@ -94,6 +94,14 @@ typedef u16 bitcnt_t;
 /* WORD_HIGHBIT: constant of word size with only MSB set. */
 #define WORD_HIGHBIT (WORD(1) << (WORD_BITS - 1))
 
+
+#ifdef __GNUC__
+#define WORD_MUL(outh, outl, in1, in2) do {				\
+	dword_t res = (dword_t)in1 * in2;					\
+  outh = (word_t)(res >> WORDSIZE); \
+  outl = (word_t)((res << WORDSIZE) >> WORDSIZE); \
+	} while (0)
+#else
 /* WORD_MUL: multiply two words using schoolbook multiplication on half words */
 #define WORD_MUL(outh, outl, in1, in2) do {				\
 	word_t in1h, in1l, in2h, in2l;					\
@@ -126,4 +134,5 @@ typedef u16 bitcnt_t;
 	(outh) = tmph + carryl;						\
 	} while (0)
 
+#endif
 #endif /* __WORDS_H__ */

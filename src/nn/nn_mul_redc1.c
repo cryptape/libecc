@@ -96,6 +96,22 @@ word_t nn_compute_redc1_coefs(nn_t r, nn_t r_square, nn_src_t p_in)
 	return mpinv;
 }
 
+#ifdef WITH_LL_U256_MONT
+
+__attribute__((noinline)) void
+ll_u256_mont_mul(uint64_t rd[4], const uint64_t ad[4], const uint64_t bd[4],
+                 const uint64_t Nd[4], uint64_t k0);
+
+static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
+			  word_t mpinv);
+
+static void my_nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
+			  word_t mpinv) {
+  nn_set_wlen(out, p->wlen);
+  ll_u256_mont_mul(out->val, in1->val, in2->val, p->val, mpinv);
+}
+
+#endif
 /*
  * Perform Montgomery multiplication, that is usual multplication
  * followed by reduction modulo p.
@@ -202,16 +218,14 @@ static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 void nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 		  word_t mpinv)
 {
-	/* Handle output aliasing */
-	if ((out == in1) || (out == in2) || (out == p)) {
-		nn out_cpy;
-		_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
-		nn_init(out, out_cpy.wlen);
-		nn_copy(out, &out_cpy);
-		nn_uninit(&out_cpy);
-	} else {
-		_nn_mul_redc1(out, in1, in2, p, mpinv);
-	}
+#ifdef WITH_LL_U256_MONT
+	my_nn_mul_redc1(out, in1, in2, p, mpinv);
+#else
+	nn out_cpy;
+	_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
+	nn_init(out, out_cpy.wlen);
+	nn_copy(out, &out_cpy);
+#endif
 }
 
 /*

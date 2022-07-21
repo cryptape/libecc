@@ -4,12 +4,17 @@
 MINGW := $(shell $(CC) -dumpmachine 2>&1 | grep -v mingw)
 # Detect Mac OS compilers: these usually don't like ELF pie related flags ...
 APPLE := $(shell $(CC) -dumpmachine 2>&1 | grep -v apple)
+RISCV := $(shell $(CC) -dumpmachine 2>&1 | grep -E "riscv.*(none|unknown)")
 ifneq ($(MINGW),)
 FPIC_CFLAG=-fPIC
+endif
 ifneq ($(APPLE),)
 FPIE_CFLAG=-fPIE
 FPIE_LDFLAGS=-pie -Wl,-z,relro,-z,now
 endif
+ifneq ($(RISCV),)
+FPIE_CFLAG=
+FPIE_LDFLAGS=-Wl,-z,relro,-z,now
 endif
 
 # NOTE: with mingw, FORTIFY_SOURCE=2 must be used
@@ -54,6 +59,10 @@ CFLAGS ?= $(WARNING_CFLAGS) -pedantic -fno-builtin -std=c99 \
 	  $(FORTIFY_FLAGS) $(STACK_PROT_FLAG) -O3 -D__unix__
 LDFLAGS ?=
 
+ifeq ($(LIBECC_WITH_LL_U256_MONT),1)
+CFLAGS += -DWITH_LL_U256_MONT
+endif
+
 # Default AR and RANLIB if not overriden by user
 AR ?= ar
 RANLIB ?= ranlib
@@ -62,7 +71,7 @@ AR_FLAGS ?= rcs
 RANLIB_FLAGS ?= 
 
 # Our debug flags
-DEBUG_CFLAGS = -DDEBUG -O -g
+DEBUG_CFLAGS = -DDEBUG -O -g -DVERBOSE_INNER_VALUES
 
 # Default all and clean target that will be expanded
 # later in the Makefile
@@ -101,6 +110,11 @@ force_arch32: clean all
 # By default, we use an stdlib
 ifneq ($(LIBECC_NOSTDLIB),1)
 CFLAGS += -DWITH_STDLIB
+endif
+
+# By default, we don't use ckb specific functions
+ifeq ($(LIBECC_CKB),1)
+CFLAGS += -DWITH_CKB
 endif
 
 # Let's now define the two kinds of CFLAGS we will use for building our

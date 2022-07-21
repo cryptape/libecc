@@ -78,8 +78,8 @@ static int nn_modinv_odd(nn_t out, nn_src_t x, nn_src_t m)
 	 * does not hurt to set them already.
 	 * They will always be strictly smaller than m.
 	 */
-	nn_set_wlen(&u, m->wlen);
-	nn_set_wlen(uu, m->wlen);
+	// nn_set_wlen(&u, m->wlen);
+	// nn_set_wlen(uu, m->wlen);
 
 	/*
 	 * Precompute inverse of 2 mod m:
@@ -110,7 +110,7 @@ static int nn_modinv_odd(nn_t out, nn_src_t x, nn_src_t m)
 
 		MUST_HAVE(nn_isodd(&b));
 		odd = nn_isodd(&a);
-		swap = odd & (nn_cmp(&a, &b) == -1);
+		swap = odd && (nn_cmp(&a, &b) == -1);
 		nn_cnd_swap(swap, &a, &b);
 		nn_cnd_sub(odd, &a, &a, &b);
 		MUST_HAVE(!nn_isodd(&a)); /* a is now even */
@@ -133,12 +133,16 @@ static int nn_modinv_odd(nn_t out, nn_src_t x, nn_src_t m)
 		 */
 		nn_cnd_swap(swap, &u, uu);
 		/* This parameter is used to avoid handling negative numbers. */
-		smaller = (nn_cmp(&u, uu) == -1);
 		/* Computation of 'm - uu' can always be performed. */
-		nn_sub(&tmp, m, uu);
-		/* Selection btw 'm-uu' and '-uu' is made by the following function calls. */
-		nn_cnd_add(odd & smaller, &u, &u, &tmp); /* no carry can occur as 'u+(m-uu) = m-(uu-u) < m' */
-		nn_cnd_sub(odd & !smaller, &u, &u, uu);
+		if (odd) {
+      smaller = (nn_cmp(&u, uu) == -1);
+      if (smaller) {
+        nn_sub(&tmp, m, uu);
+        nn_add(&u, &u, &tmp);
+      } else {
+        nn_sub(&u, &u, uu);
+      }
+		}
 		/* Divide u by 2 */
 		odd = nn_isodd(&u);
 		nn_rshift_fixedlen(&u, &u, 1);
@@ -147,6 +151,7 @@ static int nn_modinv_odd(nn_t out, nn_src_t x, nn_src_t m)
 		MUST_HAVE(nn_cmp(&u, m) < 0);
 		MUST_HAVE(nn_cmp(uu, m) < 0);
 
+		if (nn_iszero(&a)) break;
 		/*
 		 * As long as a > 0, the quantity
 		 * (bitsize of a) + (bitsize of b)
@@ -339,3 +344,5 @@ int nn_modinv_2exp(nn_t out, nn_src_t x, bitcnt_t exp)
 	nn_uninit(&tmp_mul);
 	return 1;
 }
+
+

@@ -31,7 +31,7 @@
 #endif
 
 /*** Handling the types ****/
-#ifdef WITH_STDLIB
+#if defined(WITH_STDLIB) || defined(WITH_CKB)
 
 /*
  * User explicitly needs to build w/ stdlib. Let's include the headers

@@ -58,6 +58,10 @@
  */
 static word_t _nn_cnd_add(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 {
+  if (cnd == 0) {
+    if (out != in1) nn_copy(out, in1);
+    return 0;
+  }
 	word_t tmp, carry1, carry2, carry = WORD(0);
 	word_t mask = WORD_MASK_IFNOTZERO(cnd);
 	u8 i, loop_wlen;
@@ -113,7 +117,7 @@ void nn_cnd_add(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 
 	/* We cannot allow a non-zero carry if out->wlen is at its limit */
 	MUST_HAVE((out->wlen != NN_MAX_WORD_LEN) || (!carry));
-	if (out->wlen != NN_MAX_WORD_LEN) {
+	if (out->wlen != NN_MAX_WORD_LEN && carry != 0) {
 		/*
 		 * To maintain constant time, we perform carry addition in all
 		 * cases. If carry is 0, no change is performed in practice,
@@ -225,6 +229,10 @@ void nn_inc(nn_t out, nn_src_t in1)
  */
 void nn_cnd_sub(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 {
+  if (cnd == 0) {
+    if (out != in1) nn_copy(out, in1);
+    return;
+  }
 	word_t tmp, borrow1, borrow2, borrow = WORD(0);
 	word_t mask = WORD_MASK_IFNOTZERO(cnd);
 	u8 loop_wlen, i;
@@ -321,10 +329,8 @@ void nn_mod_add(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p)
 	 * of in1 and in2 so getting a carry out does not necessarily mean
 	 * that the sum is larger than p...
 	 */
-	nn_set_wlen(out, p->wlen + 1);
 	larger = (nn_cmp(out, p) >= 0);
 	nn_cnd_sub(larger, out, out, p);
-	nn_set_wlen(out, p->wlen);
 }
 
 /* Compute out = in1 + 1 mod p */
@@ -363,17 +369,16 @@ void nn_mod_sub(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p)
 		nn_copy(&in2_cpy, in2);
 		in2_ = &in2_cpy;
 	} else {
-		nn_init(&in2_cpy, 0);
 		in2_ = in2;
 	}
 
 	/* The below trick is used to avoid handling of "negative" numbers. */
 	smaller = nn_cmp(in1, in2_) < 0;
 	nn_cnd_add(smaller, out, in1, p);
-	nn_set_wlen(out, p->wlen + 1);	/* See Comment in nn_mod_add() */
 	nn_sub(out, out, in2_);
-	nn_set_wlen(out, p->wlen);
-	nn_uninit(&in2_cpy);
+	if (in2 == out) {
+		nn_uninit(&in2_cpy);
+	}
 }
 
 /* Compute out = in1 - 1 mod p */

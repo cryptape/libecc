@@ -14,17 +14,31 @@ LIBS += $(LIBARITH_DYN) $(LIBEC_DYN) $(LIBSIGN_DYN)
 endif
 
 # Executables to build
-TESTS_EXEC = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils
+TESTS_EXEC = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils $(BUILD_DIR)/nn_mul_redc1
+# ec_utils has some file operations, excluding it here.
+CKB_TESTS_EXEC = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/nn_mul_redc1
 # We also compile executables with dynamic linking if asked to
 ifeq ($(WITH_DYNAMIC_LIBS),1)
 TESTS_EXEC += $(BUILD_DIR)/ec_self_tests_dyn $(BUILD_DIR)/ec_utils_dyn
 endif
 
-EXEC_TO_CLEAN = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils $(BUILD_DIR)/ec_self_tests_dyn $(BUILD_DIR)/ec_utils_dyn
+EXEC_TO_CLEAN = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/nn_mul_redc1 $(BUILD_DIR)/nn_mul_redc1 $(BUILD_DIR)/ec_self_tests_dyn $(BUILD_DIR)/nn_mul_redc1_dyn
 
 # all and clean, as you might expect
-# all: depend $(LIBS) $(TESTS_EXEC)
-all: depend $(LIBS) 
+all: depend $(LIBS)
+execs: depend $(LIBS) $(TESTS_EXEC)
+
+CKB_CFLAGS := -fno-builtin -fno-builtin-printf -nostdinc -nostdlib -nostartfiles -fvisibility=hidden -fdata-sections -ffunction-sections -Ideps/ckb-c-stdlib -Ideps/ckb-c-stdlib/libc -Ideps/ckb-c-stdlib/molecule -DVERBOSE_INNER_VALUES -DUSER_NN_BIT_LEN=256 -DWORDSIZE=64 -DWITH_STDLIB -DWITH_CKB -DCKB_DECLARATION_ONLY -fPIC -g -O3
+CKB_BIN_CFLAGS := -fno-builtin -fno-builtin-printf -nostdinc -nostdlib -nostartfiles -Ideps/ckb-c-stdlib -Ideps/ckb-c-stdlib/libc -Ideps/ckb-c-stdlib/molecule -DVERBOSE_INNER_VALUES -DUSER_NN_BIT_LEN=256 -DWORDSIZE=64 -DWITH_STDLIB -DWITH_CKB -fPIC -g -O3
+# Overwrite CFLAGS to binaries runnable on ckb-vm
+ckb_execs: CFLAGS := $(CKB_CFLAGS)
+ckb_execs: BIN_CFLAGS := $(CKB_BIN_CFLAGS)
+# Build these ckb-vm binaries with command `CC=riscv64-unknown-linux-gnu-gcc make ckb_execs`
+# where riscv64-unknown-linux-gnu-gcc is a riscv64 gcc. One may obtain such compiler from,
+# for example,
+# https://hub.docker.com/layers/nervos/ckb-riscv-gnu-toolchain/gnu-focal-20230214/images/sha256-7bc4e566f293b6c3d9740cf04fc5861b2f0acc268ca3a025fcf9446f1ab5f27d
+ckb_execs: depend $(LIBS) $(CKB_TESTS_EXEC)
+
 
 clean:
 	@rm -f $(LIBS) $(EXEC_TO_CLEAN)
@@ -49,6 +63,9 @@ src/external_deps/%.d: src/external_deps/%.c
 
 src/external_deps/%.o: src/external_deps/%.c
 	$(CC) $(LIB_CFLAGS) -c $< -o $@
+
+src/nn/ll_u256_mont-riscv64.o: src/nn/ll_u256_mont-riscv64.S
+	$(CC) -c -DCKB_DECLARATION_ONLY  $(LIB_CFLAGS) -o $@ $<
 
 # utils module (for the ARITH layer, we only need
 # NN and FP - and not curves - related stuff. Same goes
@@ -103,6 +120,9 @@ src/fp/%.o: src/fp/%.c $(NN_CONFIG) $(CFG_DEPS)
 
 
 LIBARITH_OBJECTS = $(FP_OBJECTS) $(NN_OBJECTS) $(RAND_OBJECTS) $(UTILS_ARITH_OBJECTS)
+ifeq ($(LIBECC_WITH_LL_U256_MONT),1)
+LIBARITH_OBJECTS += src/nn/ll_u256_mont-riscv64.o
+endif
 $(LIBARITH): $(LIBARITH_OBJECTS)
 	$(AR) $(AR_FLAGS) $@ $^
 	$(RANLIB) $(RANLIB_FLAGS) $@
@@ -196,6 +216,9 @@ TESTS_OBJECTS_SELF_DEPS = $(patsubst %.c, %.d, $(TESTS_OBJECTS_SELF_SRC))
 TESTS_OBJECTS_UTILS_SRC = src/tests/ec_utils.c
 TESTS_OBJECTS_UTILS = $(patsubst %.c, %.o, $(TESTS_OBJECTS_UTILS_SRC))
 TESTS_OBJECTS_UTILS_DEPS = $(patsubst %.c, %.d, $(TESTS_OBJECTS_UTILS_SRC))
+TESTS_OBJECTS_NN_MUL_REDC1_SRC = src/tests/nn_mul_redc1.c
+TESTS_OBJECTS_NN_MUL_REDC1 = $(patsubst %.c, %.o, $(TESTS_OBJECTS_NN_MUL_REDC1_SRC))
+TESTS_OBJECTS_NN_MUL_REDC1_DEPS = $(patsubst %.c, %.d, $(TESTS_OBJECTS_NN_MUL_REDC1_SRC))
 
 $(TESTS_OBJECTS_CORE_DEPS): $(TESTS_OBJECTS_CORE_SRC) $(CFG_DEPS)
 	$(if $(filter $(wildcard src/tests/*.c), $<), @$(CC) $(LIB_CFLAGS) -MM $< -MF $@)
@@ -213,6 +236,9 @@ $(BUILD_DIR)/ec_self_tests: $(TESTS_OBJECTS_CORE) $(TESTS_OBJECTS_SELF_SRC) $(EX
 $(BUILD_DIR)/ec_utils: $(TESTS_OBJECTS_CORE) $(TESTS_OBJECTS_UTILS_SRC) $(EXT_DEPS_OBJECTS) $(LIBSIGN)
 	$(CC) $(BIN_CFLAGS) $(BIN_LDFLAGS) -DWITH_STDLIB  $^ -o $@
 
+$(BUILD_DIR)/nn_mul_redc1: $(TESTS_OBJECTS_CORE) $(TESTS_OBJECTS_NN_MUL_REDC1_SRC) $(EXT_DEPS_OBJECTS) $(LIBSIGN)
+	$(CC) $(BIN_CFLAGS) $(BIN_LDFLAGS) -DWITH_STDLIB  $^ -o $@
+
 # If the user asked for dynamic libraries, compile versions of our binaries against them
 ifeq ($(WITH_DYNAMIC_LIBS),1)
 $(BUILD_DIR)/ec_self_tests_dyn: $(TESTS_OBJECTS_CORE) $(TESTS_OBJECTS_SELF_SRC) $(EXT_DEPS_OBJECTS)
@@ -228,3 +254,5 @@ DEPENDS = $(EXT_DEPS_DEPS) $(UTILS_ARITH_DEPS) $(UTILS_EC_DEPS) $(UTILS_SIGN_DEP
 depend: $(DEPENDS)
 
 .PHONY: all depend clean 16 32 64 debug debug16 debug32 debug64 force_arch32 force_arch64
+
+
