@@ -75,11 +75,12 @@ void nn_init(nn_t A, u16 len)
 {
 	u8 i;
 
-	MUST_HAVE((A != NULL) && (len <= NN_MAX_BYTE_LEN));
+	// MUST_HAVE((A != NULL) && (len <= NN_MAX_BYTE_LEN));
 
 	A->wlen = (u8)BYTE_LEN_WORDS(len);
 	A->magic = NN_MAGIC;
 
+  // memset(A->val, 0, NN_MAX_BYTE_LEN);
 	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
 		A->val[i] = WORD(0);
 	}
@@ -298,9 +299,10 @@ void nn_copy(nn_t dst_nn, nn_src_t src_nn)
 {
 	u8 i;
 
-	MUST_HAVE((const void *)dst_nn != NULL);
+	// MUST_HAVE((const void *)dst_nn != NULL);
 	nn_check_initialized(src_nn);
 
+  // memcpy(dst_nn->val, src_nn->val, NN_MAX_BYTE_LEN);
 	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
 		dst_nn->val[i] = src_nn->val[i];
 	}
