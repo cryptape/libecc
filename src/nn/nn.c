@@ -280,11 +280,11 @@ int nn_cmp(nn_src_t A, nn_src_t B)
 
 	ret = 0;
 	for (i = cmp_len - 1; i >= 0; i--) {	/* ok even if cmp_len is 0 */
-		mask = !(ret & 0x1);
-		ret += (A->val[i] > B->val[i]) & mask;
-		ret -= (A->val[i] < B->val[i]) & mask;
+		if (A->val[i] > B->val[i]) return 1;
+		if (A->val[i] < B->val[i]) return -1;
 	}
 
+  return 0;
 	return ret;
 }
 
