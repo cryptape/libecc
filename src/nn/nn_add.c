@@ -329,10 +329,8 @@ void nn_mod_add(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p)
 	 * of in1 and in2 so getting a carry out does not necessarily mean
 	 * that the sum is larger than p...
 	 */
-	nn_set_wlen(out, p->wlen + 1);
 	larger = (nn_cmp(out, p) >= 0);
 	nn_cnd_sub(larger, out, out, p);
-	nn_set_wlen(out, p->wlen);
 }
 
 /* Compute out = in1 + 1 mod p */
@@ -378,9 +376,7 @@ void nn_mod_sub(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p)
 	/* The below trick is used to avoid handling of "negative" numbers. */
 	smaller = nn_cmp(in1, in2_) < 0;
 	nn_cnd_add(smaller, out, in1, p);
-	nn_set_wlen(out, p->wlen + 1);	/* See Comment in nn_mod_add() */
 	nn_sub(out, out, in2_);
-	nn_set_wlen(out, p->wlen);
 	nn_uninit(&in2_cpy);
 }
 
