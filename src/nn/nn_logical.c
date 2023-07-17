@@ -398,6 +398,10 @@ void nn_not(nn_t A, nn_src_t B)
 /* Count leading zeros of a word. This is NOT constant time */
 static u8 wclz(word_t A)
 {
+#ifdef local_clz
+	return (u8)local_clz(A);
+#else
+	u8 cnt = 0, over = 0;
 	u8 cnt = 0, over = 0;
 	int i;
 
@@ -409,6 +413,7 @@ static u8 wclz(word_t A)
 	}
 
 	return cnt;
+#endif
 }
 
 /* Count leading zeros of an initialized nn. This is NOT constant time. */
