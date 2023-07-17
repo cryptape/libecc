@@ -59,7 +59,7 @@
 static word_t _nn_cnd_add(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 {
   if (cnd == 0) {
-    nn_copy(out, in1);
+    if (out != in1) nn_copy(out, in1);
     return 0;
   }
 	word_t tmp, carry1, carry2, carry = WORD(0);
@@ -230,7 +230,7 @@ void nn_inc(nn_t out, nn_src_t in1)
 void nn_cnd_sub(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 {
   if (cnd == 0) {
-    nn_copy(out, in1);
+    if (out != in1) nn_copy(out, in1);
     return;
   }
 	word_t tmp, borrow1, borrow2, borrow = WORD(0);
