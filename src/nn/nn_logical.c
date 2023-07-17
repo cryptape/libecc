@@ -395,16 +395,17 @@ void nn_not(nn_t A, nn_src_t B)
 	}
 }
 
-/* Count leading zeros of a word. This is constant time */
+/* Count leading zeros of a word. This is NOT constant time */
 static u8 wclz(word_t A)
 {
-	u8 cnt = WORD_BITS, over = 0;
+	u8 cnt = 0, over = 0;
 	int i;
 
 	for (i = (WORD_BITS - 1); i >= 0; i--) {
 		/* i is less than WORD_BITS so shift operations below are ok */
-		over |= (int)(((A & (WORD(1) << i)) >> i) & 0x1);
-		cnt -= over;
+		over = (int)(((A & (WORD(1) << i)) >> i) & 0x1);
+		if (over != 0) return cnt;
+		cnt++;
 	}
 
 	return cnt;
