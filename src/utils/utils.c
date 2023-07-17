@@ -1,3 +1,4 @@
+#include <string.h>
 /*
  *  Copyright (C) 2017 - This file is part of libecc project
  *
@@ -37,27 +38,13 @@ u8 are_equal(const void *a, const void *b, u32 len)
 /* This function is a simple (non-optimized) reimplementation of memcpy() */
 void local_memcpy(void *dst, const void *src, u32 n)
 {
-	const u8 *lsrc = (const u8*)src;
-	u8 *ldst = (u8*)dst;
-	u32 i;
-
-	for (i = 0; i < n; i++) {
-		*ldst = *lsrc;
-		ldst++;
-		lsrc++;
-	}
+	memcpy(dst, src, n);
 }
 
 /* This function is a simple (non-optimized) reimplementation of memset() */
 void local_memset(void *v, u8 c, u32 n)
 {
-	volatile u8 *p = (volatile u8*)v;
-	u32 i;
-
-	for (i = 0; i < n; i++) {
-		*p = c;
-		p++;
-	}
+	memset(v, c, n);
 }
 
 /* This function returns 1 if strings are equal and 0 otherise */
