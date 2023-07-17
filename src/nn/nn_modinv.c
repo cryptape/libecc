@@ -147,6 +147,7 @@ static int nn_modinv_odd(nn_t out, nn_src_t x, nn_src_t m)
 		MUST_HAVE(nn_cmp(&u, m) < 0);
 		MUST_HAVE(nn_cmp(uu, m) < 0);
 
+		if (nn_iszero(&a)) break;
 		/*
 		 * As long as a > 0, the quantity
 		 * (bitsize of a) + (bitsize of b)
