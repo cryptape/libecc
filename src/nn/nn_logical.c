@@ -398,22 +398,15 @@ void nn_not(nn_t A, nn_src_t B)
 /* Count leading zeros of a word. This is NOT constant time */
 static u8 wclz(word_t A)
 {
-#ifdef local_clz
-	return (u8)local_clz(A);
-#else
-	u8 cnt = 0, over = 0;
-	u8 cnt = 0, over = 0;
-	int i;
-
-	for (i = (WORD_BITS - 1); i >= 0; i--) {
-		/* i is less than WORD_BITS so shift operations below are ok */
-		over = (int)(((A & (WORD(1) << i)) >> i) & 0x1);
-		if (over != 0) return cnt;
-		cnt++;
-	}
-
-	return cnt;
-#endif
+    if (A == 0) return 64;
+    u8 c = 0;
+    if (A <= 0x00000000FFFFFFFF) { c += 32; A <<= 32; };
+    if (A <= 0x0000FFFFFFFFFFFF) { c += 16; A <<= 16; };
+    if (A <= 0x00FFFFFFFFFFFFFF) { c += 8; A <<= 8; };
+    if (A <= 0x0FFFFFFFFFFFFFFF) { c += 4; A <<= 4; };
+    if (A <= 0x3FFFFFFFFFFFFFFF) { c += 2; A <<= 2; };
+    if (A <= 0x7FFFFFFFFFFFFFFF) { c += 1; };
+    return c;
 }
 
 /* Count leading zeros of an initialized nn. This is NOT constant time. */
@@ -463,3 +456,5 @@ u8 nn_getbit(nn_src_t in, bitcnt_t bit)
 	/* bidx is less than WORD_BITS so shift operations below are ok */
 	return (u8)((((in->val[widx]) & (WORD(1) << bidx)) >> bidx) & 0x1);
 }
+
+

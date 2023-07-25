@@ -25,7 +25,6 @@
 typedef uint64_t word_t;
 typedef uint32_t hword_t;
 #ifdef __GNUC__
-#define local_clz __builtin_clzl
 __extension__ typedef unsigned __int128 dword_t;
 #endif
 
