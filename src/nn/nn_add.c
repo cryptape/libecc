@@ -369,7 +369,6 @@ void nn_mod_sub(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p)
 		nn_copy(&in2_cpy, in2);
 		in2_ = &in2_cpy;
 	} else {
-		nn_init(&in2_cpy, 0);
 		in2_ = in2;
 	}
 
@@ -377,7 +376,9 @@ void nn_mod_sub(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p)
 	smaller = nn_cmp(in1, in2_) < 0;
 	nn_cnd_add(smaller, out, in1, p);
 	nn_sub(out, out, in2_);
-	nn_uninit(&in2_cpy);
+	if (in2 == out) {
+		nn_uninit(&in2_cpy);
+	}
 }
 
 /* Compute out = in1 - 1 mod p */
