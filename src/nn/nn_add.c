@@ -117,7 +117,7 @@ void nn_cnd_add(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 
 	/* We cannot allow a non-zero carry if out->wlen is at its limit */
 	MUST_HAVE((out->wlen != NN_MAX_WORD_LEN) || (!carry));
-	if (out->wlen != NN_MAX_WORD_LEN) {
+	if (out->wlen != NN_MAX_WORD_LEN && carry != 0) {
 		/*
 		 * To maintain constant time, we perform carry addition in all
 		 * cases. If carry is 0, no change is performed in practice,
