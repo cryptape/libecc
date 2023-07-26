@@ -178,18 +178,15 @@ void nn_set_wlen(nn_t A, u8 new_wlen)
  */
 int nn_iszero(nn_src_t A)
 {
-	int ret = 0;
 	u8 i;
 
 	nn_check_initialized(A);
-	MUST_HAVE(A->wlen <= NN_MAX_WORD_LEN);
 
-	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
-		int mask = ((i < A->wlen) ? 1 : 0);
-		ret |= ((A->val[i] != 0) & mask);
+	for (i = 0; i < A->wlen; i++) {
+		if (A->val[i] != 0) return 0;
 	}
 
-	return !ret;
+	return 1;
 }
 
 /* 
@@ -247,7 +244,7 @@ int nn_cmp_word(nn_src_t in, word_t w)
 	 * of those is non-zero.
 	 */
 	for (i = in->wlen - 1; i > 0; i--) {
-		ret |= (in->val[i] != 0);
+		if (in->val[i] != 0) return 1;
 	}
 
 	/*
