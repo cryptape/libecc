@@ -218,14 +218,14 @@ static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 void nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 		  word_t mpinv)
 {
-	nn out_cpy;
 #ifdef WITH_LL_U256_MONT
-	my_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
+	my_nn_mul_redc1(out, in1, in2, p, mpinv);
 #else
+	nn out_cpy;
 	_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
-#endif
 	nn_init(out, out_cpy.wlen);
 	nn_copy(out, &out_cpy);
+#endif
 }
 
 /*
