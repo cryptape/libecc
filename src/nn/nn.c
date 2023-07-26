@@ -109,12 +109,10 @@ void nn_one(nn_t A)
 
 /*
  * Uninitialize pointed nn to prevent further use (magic field in
- * the structure is zeroized) and zeroize associated storage space.
+ * the structure is zeroized).
  */
 void nn_uninit(nn_t A)
 {
-	nn_zero(A);
-	A->wlen = 0;
 	A->magic = 0;
 }
 
