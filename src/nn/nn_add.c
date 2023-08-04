@@ -23,10 +23,6 @@
  *  o out = in1 +/- in2 if cnd is not zero.
  *  o out = in1 if cnd is zero.
  *
- * The time taken by the operation does not depend on cnd value, i.e. it is
- * constant time for that specific factor, nor on the values of in1 and in2.
- * It still depends on the maximal length of in1 and in2.
- *
  * Common addition and subtraction functions are derived from those conditional
  * versions.
  */
