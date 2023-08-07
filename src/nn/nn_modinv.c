@@ -24,7 +24,6 @@
  * Compute out = x^-1 mod m, i.e. out such that (out * x) = 1 mod m
  * out is initialized by the function, i.e. caller need
  * not initialize it; only provide the associated storage space.
- * Done in *constant time* if underlying routines are.
  *
  * Asserts that m is odd and that x is smaller than m.
  * This second condition is not strictly necessary,
@@ -110,7 +109,7 @@ static int nn_modinv_odd(nn_t out, nn_src_t x, nn_src_t m)
 
 		MUST_HAVE(nn_isodd(&b));
 		odd = nn_isodd(&a);
-		swap = odd && (nn_cmp(&a, &b) == -1);
+		swap = odd && (nn_cmp(&a, &b) == -1); // Using && to early return.
 		nn_cnd_swap(swap, &a, &b);
 		nn_cnd_sub(odd, &a, &a, &b);
 		MUST_HAVE(!nn_isodd(&a)); /* a is now even */
@@ -153,7 +152,9 @@ static int nn_modinv_odd(nn_t out, nn_src_t x, nn_src_t m)
 		MUST_HAVE(nn_cmp(&u, m) < 0);
 		MUST_HAVE(nn_cmp(uu, m) < 0);
 
+		// a == 0 the termination condition of binary extended gcd algorithm.
 		// When a = 0, even if the loop continues, the following iterations will actually change nothing.
+		// The follow break make this algorithm non-constant time.
 		if (nn_iszero(&a)) break;
 		/*
 		 * As long as a > 0, the quantity

@@ -75,6 +75,7 @@ void nn_init(nn_t A, u16 len)
 {
 	u8 i;
 
+	// This is a costly operaiton. We just assume the condition holds.
 	// MUST_HAVE((A != NULL) && (len <= NN_MAX_BYTE_LEN));
 
 	A->wlen = (u8)BYTE_LEN_WORDS(len);
@@ -108,8 +109,8 @@ void nn_one(nn_t A)
 }
 
 /*
- * Uninitialize pointed nn to prevent further use (magic field in
- * the structure is zeroized).
+ * Uninitialize pointed nn to prevent further use (as this is a costly
+ * operation, only the magic field in the structure is zeroized).
  */
 void nn_uninit(nn_t A)
 {

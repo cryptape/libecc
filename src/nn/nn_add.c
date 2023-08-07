@@ -54,6 +54,7 @@
  */
 static word_t _nn_cnd_add(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 {
+  // An non-constant timem optimization to early return on precondition not met.
   if (cnd == 0) {
     if (out != in1) nn_copy(out, in1);
     return 0;
@@ -225,6 +226,7 @@ void nn_inc(nn_t out, nn_src_t in1)
  */
 void nn_cnd_sub(int cnd, nn_t out, nn_src_t in1, nn_src_t in2)
 {
+  // An non-constant timem optimization to early return on precondition not met.
   if (cnd == 0) {
     if (out != in1) nn_copy(out, in1);
     return;
