@@ -112,7 +112,7 @@ ifneq ($(LIBECC_NOSTDLIB),1)
 CFLAGS += -DWITH_STDLIB
 endif
 
-# By default, we don't ckb specific functions
+# By default, we don't use ckb specific functions
 ifeq ($(LIBECC_CKB),1)
 CFLAGS += -DWITH_CKB
 endif
@@ -193,7 +193,3 @@ endif
 ifeq ($(LADDER), 0)
 CFLAGS += -DUSE_DOUBLE_ADD_ALWAYS
 endif
-
-
-
-

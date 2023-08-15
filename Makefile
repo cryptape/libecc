@@ -15,7 +15,7 @@ endif
 
 # Executables to build
 TESTS_EXEC = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils $(BUILD_DIR)/nn_mul_redc1
-# ec_utils has some file operations, exlude it here.
+# ec_utils has some file operations, excluding it here.
 CKB_TESTS_EXEC = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/nn_mul_redc1
 # We also compile executables with dynamic linking if asked to
 ifeq ($(WITH_DYNAMIC_LIBS),1)
@@ -243,3 +243,5 @@ DEPENDS = $(EXT_DEPS_DEPS) $(UTILS_ARITH_DEPS) $(UTILS_EC_DEPS) $(UTILS_SIGN_DEP
 depend: $(DEPENDS)
 
 .PHONY: all depend clean 16 32 64 debug debug16 debug32 debug64 force_arch32 force_arch64
+
+
