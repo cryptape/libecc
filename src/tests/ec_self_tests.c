@@ -157,10 +157,11 @@ int main(int argc, char *argv[])
 	int sign_filters_num = 0, hash_filters_num = 0, curve_filters_num = 0;
 	int i, j, k;
 
-	/* By default, perform all tests */
 #if defined(WITH_CKB)
+	/* PERFORMANCE tests are too slow to run on ckb */
 	tests_to_do = KNOWN_TEST_VECTORS | RANDOM_SIG_VERIF;
 #else
+	/* By default, perform all tests */
 	tests_to_do = KNOWN_TEST_VECTORS | RANDOM_SIG_VERIF | PERFORMANCE;
 #endif
 
