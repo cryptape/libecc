@@ -27,7 +27,18 @@ EXEC_TO_CLEAN = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/nn_mul_redc1 $(BUILD_DIR
 # all and clean, as you might expect
 all: depend $(LIBS)
 execs: depend $(LIBS) $(TESTS_EXEC)
+
+CKB_CFLAGS := -fno-builtin -fno-builtin-printf -nostdinc -nostdlib -nostartfiles -fvisibility=hidden -fdata-sections -ffunction-sections -Ideps/ckb-c-stdlib -Ideps/ckb-c-stdlib/libc -Ideps/ckb-c-stdlib/molecule -DVERBOSE_INNER_VALUES -DUSER_NN_BIT_LEN=256 -DWORDSIZE=64 -DWITH_STDLIB -DWITH_CKB -DCKB_DECLARATION_ONLY -fPIC -g -O3
+CKB_BIN_CFLAGS := -fno-builtin -fno-builtin-printf -nostdinc -nostdlib -nostartfiles -Ideps/ckb-c-stdlib -Ideps/ckb-c-stdlib/libc -Ideps/ckb-c-stdlib/molecule -DVERBOSE_INNER_VALUES -DUSER_NN_BIT_LEN=256 -DWORDSIZE=64 -DWITH_STDLIB -DWITH_CKB -fPIC -g -O3
+# Overwrite CFLAGS to binaries runnable on ckb-vm
+ckb_execs: CFLAGS := $(CKB_CFLAGS)
+ckb_execs: BIN_CFLAGS := $(CKB_BIN_CFLAGS)
+# Build these ckb-vm binaries with command `CC=riscv64-unknown-linux-gnu-gcc make ckb_execs`
+# where riscv64-unknown-linux-gnu-gcc is a riscv64 gcc. One may obtain such compiler from,
+# for example,
+# https://hub.docker.com/layers/nervos/ckb-riscv-gnu-toolchain/gnu-focal-20230214/images/sha256-7bc4e566f293b6c3d9740cf04fc5861b2f0acc268ca3a025fcf9446f1ab5f27d
 ckb_execs: depend $(LIBS) $(CKB_TESTS_EXEC)
+
 
 clean:
 	@rm -f $(LIBS) $(EXEC_TO_CLEAN)
