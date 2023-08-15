@@ -36,5 +36,4 @@
 #include "fp/fp_rand.h"
 #include "utils/print_fp.h"
 
-#include "utils/print_buf.h"
 #endif /* __LIBARITH_H__ */
