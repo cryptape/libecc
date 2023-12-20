@@ -24,7 +24,7 @@
 #include "ec_key.h"
 #include "../utils/utils.h"
 #ifdef VERBOSE_INNER_VALUES
-#define EC_SIG_ALG "ECDSA"
+#define EC_SIG_ALG " ECDSA"
 #endif
 #include "../utils/dbg_sig.h"
 
@@ -443,6 +443,7 @@ int _ecdsa_verify_init(struct ec_verify_context *ctx, const u8 *sig, u8 siglen)
 		goto err;
 	}
 
+  dbg_buf_print("sig", sig, siglen);
 	/* Import r and s values from signature buffer */
 	nn_init_from_buf(r, sig, q_len);
 	nn_init_from_buf(s, sig + q_len, q_len);
@@ -506,6 +507,7 @@ int _ecdsa_verify_finalize(struct ec_verify_context *ctx)
 	u8 hsize;
 	int ret;
 
+  dbg_buf_print("hash", hash, sizeof(hash));
 	/*
 	 * First, verify context has been initialized and public
 	 * part too. This guarantees the context is an ECDSA
@@ -522,6 +524,8 @@ int _ecdsa_verify_finalize(struct ec_verify_context *ctx)
 	hsize = ctx->h->digest_size;
 	r = &(ctx->verify_data.ecdsa.r);
 	s = &(ctx->verify_data.ecdsa.s);
+	dbg_nn_print("r: ", r);
+	dbg_nn_print("s: ", s);
 
 	/* 2. Compute h = H(m) */
 	ctx->h->hfunc_finalize(&(ctx->verify_data.ecdsa.h_ctx), hash);
@@ -585,6 +589,7 @@ int _ecdsa_verify_finalize(struct ec_verify_context *ctx)
 
 	// prj_pt_copy(&W_prime, Y);
 	// prj_pt_copy(&W_prime, G);
+  printf("calculating wnaf \n", __func__, ret);
 	prj_pt_ec_mult_wnaf(&W_prime, &u, G, &v, Y);
 	// prj_pt_copy(&uG, G);
 	// prj_pt_copy(&vY, Y);
@@ -599,6 +604,7 @@ int _ecdsa_verify_finalize(struct ec_verify_context *ctx)
 	nn_uninit(&v);
 
 	/* 8. If W' is the point at infinity, reject the signature. */
+  printf("checking W_prime is zero \n", __func__, ret);
 	if (prj_pt_iszero(&W_prime)) {
 		ret = -1;
 		goto err;
@@ -614,6 +620,7 @@ int _ecdsa_verify_finalize(struct ec_verify_context *ctx)
 	// aff_pt_uninit(&W_prime_aff);
 
 	/* 10. Accept the signature if and only if r equals r' */
+  printf("checking r_prime is zero \n", __func__, ret);
 	ret = (nn_cmp(&r_prime, r) != 0) ? -1 : 0;
 	nn_uninit(&r_prime);
 

@@ -18,6 +18,7 @@ void copy256_update(copy256_context *ctx, const u8 *input, u32 ilen)
 
 	MUST_HAVE((ctx != NULL) && (input != NULL));
 
+  hex_dump("bytes to update", input, ilen);
 	/* Nothing to process, return */
 	if (ilen == 0) {
 		return;
@@ -39,7 +40,10 @@ void copy256_final(copy256_context *ctx, u8 output[COPY256_SIZE])
 {
 	MUST_HAVE((ctx != NULL) && (output != NULL));
 	MUST_HAVE(ctx->copied_bytes == COPY256_SIZE);
-	local_memcpy(ctx->buffer, output, COPY256_SIZE);
+  printf("Copied byts %d, COPY256_SIZE %d, sizeof(output)%d\n", ctx->copied_bytes, COPY256_SIZE, sizeof(output));
+  hex_dump("ctx->buffer", ctx->buffer, COPY256_SIZE);
+	local_memcpy(output, ctx->buffer, COPY256_SIZE);
+  hex_dump("output", output, COPY256_SIZE);
 }
 
 void copy256_scattered(const u8 **inputs, const u32 *ilens,

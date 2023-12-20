@@ -281,6 +281,7 @@ int ec_verify_init(struct ec_verify_context *ctx, const ec_pub_key *pub_key,
 	u8 i;
 	int ret;
 
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 	MUST_HAVE(ctx != NULL);
 	pub_key_check_initialized(pub_key);
 	if (pub_key->key_type != sig_type) {
@@ -301,6 +302,8 @@ int ec_verify_init(struct ec_verify_context *ctx, const ec_pub_key *pub_key,
 		goto err;
 	}
 
+  printf("Hello from %s, ret: %d\n", __func__, ret);
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 	/* Now, let's try and get the specific key algorithm which was requested */
 	ret = -1;
 	for (i = 0, sm = &ec_sig_maps[i];
@@ -314,6 +317,7 @@ int ec_verify_init(struct ec_verify_context *ctx, const ec_pub_key *pub_key,
 		goto err;
 	}
 
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 	/* Sanity checks on our mappings */
 	HASH_MAPPING_SANITY_CHECK(hm);
 	SIG_MAPPING_SANITY_CHECK(sm);
@@ -324,7 +328,9 @@ int ec_verify_init(struct ec_verify_context *ctx, const ec_pub_key *pub_key,
 	ctx->sig = sm;
 	ctx->ctx_magic = SIG_VERIFY_MAGIC;
 
+  printf("Hello from before verify init %s, ret: %d\n", __func__, ret);
 	ret = sm->verify_init(ctx, sig, siglen);
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 
  err:
 
@@ -363,7 +369,9 @@ int ec_verify_finalize(struct ec_verify_context *ctx)
 	SIG_MAPPING_SANITY_CHECK(ctx->sig);
 	HASH_MAPPING_SANITY_CHECK(ctx->h);
 
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 	ret = ctx->sig->verify_finalize(ctx);
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 
 	/* Clear the whole context to prevent future reuse */
 	local_memset(ctx, 0, sizeof(struct ec_verify_context));
@@ -378,17 +386,21 @@ int ec_verify(const u8 *sig, u8 siglen, const ec_pub_key *pub_key,
 	int ret;
 	struct ec_verify_context ctx;
 
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 	ret = ec_verify_init(&ctx, pub_key, sig, siglen, sig_type, hash_type);
 	if (ret) {
 		goto err;
 	}
 
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 	ret = ec_verify_update(&ctx, m, mlen);
 	if (ret) {
 		goto err;
 	}
 
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 	ret = ec_verify_finalize(&ctx);
+  printf("Hello from %s, ret: %d\n", __func__, ret);
 
  err:
 	return ret;

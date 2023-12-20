@@ -25,8 +25,10 @@
 #endif
 
 #define dbg_buf_print(msg, ...) do {\
+	hex_dump(msg, __VA_ARGS__);\
 } while(0);
 #define dbg_nn_print(msg, ...) do {\
+	printf("Running from %s", __func__);\
 	nn_print(EC_SIG_ALG " " msg, __VA_ARGS__);\
 } while(0);
 #define dbg_ec_point_print(msg, ...) do {\

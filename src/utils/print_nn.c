@@ -22,11 +22,11 @@ void nn_print(const char *msg, nn_src_t a)
 
 	nn_check_initialized(a);
 
-	ext_printf("%s (%d words, i.e. %d bits): 0x", msg, a->wlen,
+	printf("%s (%d words, i.e. %d bits): 0x", msg, a->wlen,
 		   a->wlen * WORD_BYTES * 8);
 
 	for (w = a->wlen - 1; w >= 0; w--) {
-		ext_printf(PRINTF_WORD_HEX_FMT, a->val[w]);
+		printf(PRINTF_WORD_HEX_FMT, a->val[w]);
 	}
 
 	ext_printf("\n");
