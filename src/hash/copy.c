@@ -27,10 +27,10 @@ void copy256_update(copy256_context *ctx, const u8 *input, u32 ilen)
 	left_bytes = COPY256_SIZE - (ctx->copied_bytes & 0x3F);
 
 	if (bytes_to_copy >= left_bytes) {
-    bytes_to_copy = left_bytes;
+		bytes_to_copy = left_bytes;
 	}
 	local_memcpy(ctx->buffer + ctx->copied_bytes, input, bytes_to_copy);
-  ctx->copied_bytes += bytes_to_copy;
+	ctx->copied_bytes += bytes_to_copy;
 	return;
 }
 
@@ -38,9 +38,9 @@ void copy256_update(copy256_context *ctx, const u8 *input, u32 ilen)
 void copy256_final(copy256_context *ctx, u8 output[COPY256_SIZE])
 {
 	MUST_HAVE((ctx != NULL) && (output != NULL));
-  // The ec_self_tests here may send less than COPY256_SIZE bytes
+	// The ec_self_tests here may send less than COPY256_SIZE bytes
 	// We always send COPY256_SIZE to outputs, even if library users
-  // didn't send COPY256_SIZE to us.
+	// didn't send COPY256_SIZE to us.
 	local_memcpy(output, ctx->buffer, COPY256_SIZE);
 }
 

@@ -246,7 +246,7 @@ static const hash_mapping hash_maps[] = {
 #define MAX_HASH_ALG_NAME_LEN 9
 #endif /* MAX_HASH_ALG_NAME_LEN */
 #endif /* WITH_HASH_SHA3_512 */
-	{.type = COPY,
+	{.type = COPY256,
 	 .name = "COPY256",
 	 .digest_size = COPY256_SIZE,
 	 .block_size = COPY256_SIZE,
